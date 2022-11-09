@@ -3,8 +3,7 @@
 #include <unordered_map>
 #include <optional>
 
-// Cache blocks are identified by their block numbers
-using CacheBlock = size_t;
+#include "cache_types.h"
 
 class Cache {
 public:

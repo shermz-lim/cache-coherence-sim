@@ -23,7 +23,7 @@ bool Cache::write_block(CacheBlock block_no) {
 void Cache::insert_block(CacheBlock block_no) {
   CacheSet& cache_set = get_cache_set(block_no);
   if (cache_set.blocks.size() >= assoc) {
-    throw std::runtime_error("inserting block into full cache set");
+    throw std::runtime_error{"inserting block into full cache set"};
   }
 
   cache_set.blocks.insert(std::make_pair(block_no, false));

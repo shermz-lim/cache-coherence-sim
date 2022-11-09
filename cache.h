@@ -1,6 +1,7 @@
 #include <vector>
 #include <list>
 #include <unordered_map>
+#include <optional>
 
 // Cache blocks are identified by their block numbers
 using CacheBlock = size_t;
@@ -13,10 +14,16 @@ public:
     return mem_addr / block_size;
   }
 
+  bool has_block(CacheBlock block_no);
+  // attempt to read block and returns whether there's a cache hit
   bool read_block(CacheBlock block_no);
+  // attempt to write block and returns whether there's a cache hit
   bool write_block(CacheBlock block_no);
+  // insert block, and assumes there's space
   void insert_block(CacheBlock block_no);
-
+  // maybe evict a block if there's no space to insert CacheBlock with block_no
+  // returns evicted cache block if any, and whether it's dirty
+  std::optional<std::pair<CacheBlock, bool>> maybe_evict_block(CacheBlock block_no);
   void print_state();
 
 private:

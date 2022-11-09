@@ -8,6 +8,10 @@ Cache::Cache(size_t size, size_t assoc, size_t block_size)
 {
 }
 
+bool Cache::has_block(CacheBlock block_no) {
+  return get_cache_set(block_no).blocks.count(block_no);
+}
+
 bool Cache::read_block(CacheBlock block_no) {
   return access_block(block_no, false);
 }
@@ -24,6 +28,19 @@ void Cache::insert_block(CacheBlock block_no) {
 
   cache_set.blocks.insert(std::make_pair(block_no, false));
   cache_set.blocks_access_order.push_front(block_no);
+}
+
+std::optional<std::pair<CacheBlock, bool>> Cache::maybe_evict_block(CacheBlock block_no) {
+  CacheSet& cache_set = get_cache_set(block_no);
+  if (cache_set.blocks.size() < assoc) {
+    return std::nullopt;
+  } else {
+    CacheBlock to_evict = cache_set.blocks_access_order.back();
+    bool dirty_bit = cache_set.blocks.at(to_evict);
+    cache_set.blocks_access_order.remove(to_evict);
+    cache_set.blocks.erase(to_evict);
+    return std::make_pair(to_evict, dirty_bit);
+  }
 }
 
 void Cache::print_state() {

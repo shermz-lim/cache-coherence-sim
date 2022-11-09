@@ -13,9 +13,9 @@ struct CoreOp {
 };
 
 struct CoreStats {
-  int compute_cycles{0};
-  int mem_insns{0};
-  int idle_cycles{0};  
+  size_t compute_cycles{0};
+  size_t mem_insns{0};
+  size_t idle_cycles{0};  
 };
 
 class Core {
@@ -26,14 +26,14 @@ public:
     return next_op_idx < ops.size();
   }
 
-  CoreOp next_op(int curr_time);
-  void complete_curr_op(int curr_time);
+  CoreOp next_op(size_t curr_time);
+  void complete_curr_op(size_t curr_time);
   CoreStats get_stats();
 
 private:
   struct CoreOpStats {
-    std::optional<int> start_time{};
-    std::optional<int> end_time{};
+    std::optional<size_t> start_time{};
+    std::optional<size_t> end_time{};
   };
 
   static CoreOpLabel get_op_label(int x);

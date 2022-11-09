@@ -13,14 +13,14 @@ Core::Core(std::vector<std::pair<int, size_t>> raw_ops)
   }
 }
 
-CoreOp Core::next_op(int curr_time) {
+CoreOp Core::next_op(size_t curr_time) {
   CoreOp& op = ops.at(next_op_idx);
   ops_stats.at(next_op_idx).start_time = curr_time;
   next_op_idx++;
   return op;
 }
 
-void Core::complete_curr_op(int curr_time) {
+void Core::complete_curr_op(size_t curr_time) {
   ops_stats.at(next_op_idx - 1).end_time = curr_time;
 }
 
@@ -29,7 +29,7 @@ CoreStats Core::get_stats() {
   for (size_t i = 0; i < next_op_idx; i++) {
     CoreOp& op = ops.at(i);
     CoreOpStats& op_stats = ops_stats.at(i);
-    int op_cycles = op_stats.end_time.value() - op_stats.start_time.value();
+    size_t op_cycles = op_stats.end_time.value() - op_stats.start_time.value();
     switch (op.label) {
       case CoreOpLabel::LOAD:
       case CoreOpLabel::STORE:

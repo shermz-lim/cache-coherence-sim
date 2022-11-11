@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
       input_file,
       core_no
     );
-    cores.emplace_back(core_raw_ops);
+    cores.emplace_back(core_no, core_raw_ops);
     caches.emplace_back(cache_size, assoc, block_size);
   }
   Bus bus{};
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
   std::vector<std::unique_ptr<CacheController>> cache_controllers{};
   for (size_t core_no = 0; core_no < NUM_CORES; core_no++) {
     auto c = std::make_unique<CacheControllerMesi>(
-      caches.at(core_no), bus, shared_line, core_no
+      caches.at(core_no), bus, shared_line
     );
     cache_controllers.push_back(std::move(c));
   }

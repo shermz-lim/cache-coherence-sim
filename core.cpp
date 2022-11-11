@@ -2,7 +2,7 @@
 
 #include "core.h"
 
-Core::Core(const std::vector<std::pair<int, size_t>>& raw_ops)
+Core::Core(size_t core_no, const std::vector<std::pair<int, size_t>>& raw_ops)
 : ops(raw_ops.size()),
   ops_stats(raw_ops.size()),
   next_op_idx{0}
@@ -10,6 +10,7 @@ Core::Core(const std::vector<std::pair<int, size_t>>& raw_ops)
   for (size_t i = 0; i < raw_ops.size(); i++) {
     auto& raw_op = raw_ops.at(i);
     CoreOp& op = ops.at(i);
+    op.core_no = core_no;
     op.label = get_op_label(raw_op.first);
     op.value = raw_op.second;
   }

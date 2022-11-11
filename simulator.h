@@ -6,12 +6,10 @@
 
 struct BusRequest {
   BusTransaction transc;
-  CoreOp op_trigger;
 };
 
 struct BusResponse {
   BusTransaction transc;
-  CoreOp op_trigger;
 };
 
 using Event = std::variant<BusRequest, BusResponse, CoreOp>;

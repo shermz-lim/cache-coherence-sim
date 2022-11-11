@@ -3,9 +3,7 @@
 CacheController::~CacheController() = default;
 
 CacheController::CacheController(Cache& cache, Bus& bus,
-                                 SharedLine& shared_line,
-                                 size_t core_idx)
+                                 SharedLine& shared_line)
 : cache(cache), bus(bus),
-  shared_line(shared_line),
-  core_idx(core_idx)
+  shared_line(shared_line)
 {}

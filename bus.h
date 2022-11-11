@@ -3,6 +3,7 @@
 #include <queue>
 #include <optional>
 
+#include "core.h"
 #include "cache_types.h"
 
 enum class BusTransactionType {
@@ -15,6 +16,8 @@ enum class BusTransactionType {
 struct BusTransaction {
   BusTransactionType t;
   CacheBlock block;
+  // core op that triggered this transaction
+  CoreOp op_trigger;
 };
 
 class Bus {

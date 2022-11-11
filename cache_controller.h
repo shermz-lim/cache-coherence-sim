@@ -15,10 +15,9 @@ public:
   virtual bool handle_bus_transc(BusTransaction transc) = 0;
 
 protected:
-  CacheController(Cache& cache, Bus& bus, SharedLine& shared_line, size_t core_idx);
+  CacheController(Cache& cache, Bus& bus, SharedLine& shared_line);
 
   Cache& cache;
   Bus& bus;
   SharedLine& shared_line;
-  size_t core_idx;
 };

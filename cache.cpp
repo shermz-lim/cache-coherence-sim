@@ -1,4 +1,6 @@
+#include <assert.h>
 #include <iostream>
+
 #include "cache.h"
 
 Cache::Cache(size_t size, size_t assoc, size_t block_size)
@@ -22,9 +24,8 @@ bool Cache::write_block(CacheBlock block_no) {
 
 void Cache::insert_block(CacheBlock block_no) {
   CacheSet& cache_set = get_cache_set(block_no);
-  if (cache_set.blocks.size() >= assoc) {
-    throw std::runtime_error{"inserting block into full cache set"};
-  }
+  assert(cache_set.blocks.size() < assoc);
+  assert(!has_block(block_no));
 
   cache_set.blocks.insert(std::make_pair(block_no, false));
   cache_set.blocks_access_order.push_front(block_no);

@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "core.h"
 
 Core::Core(std::vector<std::pair<int, size_t>> raw_ops)
@@ -37,6 +39,7 @@ CoreStats Core::get_stats() {
         stats.idle_cycles += op_cycles;
         continue;
       case CoreOpLabel::OTHER:
+        assert(op_cycles == op.value);
         stats.compute_cycles += op_cycles;
         continue;
     }

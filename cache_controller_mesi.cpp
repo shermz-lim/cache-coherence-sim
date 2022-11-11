@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "cache_controller_mesi.h"
 
 CacheControllerMesi::CacheControllerMesi(Cache& cache, Bus& bus,
@@ -9,9 +11,7 @@ CacheControllerMesi::CacheControllerMesi(Cache& cache, Bus& bus,
 CacheControllerMesi::~CacheControllerMesi() = default;
 
 void CacheControllerMesi::handle_core_op(CoreOp op) {
-  if (op.label == CoreOpLabel::OTHER) {
-    return;
-  }
+  assert(op.label != CoreOpLabel::OTHER);
 
   CacheBlock block_no = cache.get_block_no(op.value);
   bool read = op.label == CoreOpLabel::LOAD;
@@ -59,6 +59,8 @@ void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
     cache.insert_block(block_no);
     cache.write_block(block_no);
     update_state(block_no, State::MODIFIED);
+  } else {
+    assert(false);
   }
 }
 

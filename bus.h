@@ -14,7 +14,6 @@ enum class BusTransactionType {
 
 struct BusTransaction {
   BusTransactionType t;
-  size_t src_core;
   CacheBlock block;
 };
 

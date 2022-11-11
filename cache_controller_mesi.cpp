@@ -18,7 +18,7 @@ void CacheControllerMesi::handle_core_op(CoreOp op) {
   BusTransactionType transc_t = read ? BusTransactionType::BUS_RD : BusTransactionType::BUS_RDX;
   switch (get_state(block_no)) {
     case State::INVALID:
-      bus.add_request(BusTransaction{transc_t, core_idx, block_no});
+      bus.add_request(BusTransaction{transc_t, block_no});
       return;
     case State::EXCLUSIVE:
       if (read) {
@@ -32,7 +32,7 @@ void CacheControllerMesi::handle_core_op(CoreOp op) {
       if (read) {
         cache.read_block(block_no);
       } else {
-        bus.add_request(BusTransaction{BusTransactionType::BUS_UPGR, core_idx, block_no});
+        bus.add_request(BusTransaction{BusTransactionType::BUS_UPGR, block_no});
         update_state(block_no, State::MODIFIED);
         cache.write_block(block_no);
       }

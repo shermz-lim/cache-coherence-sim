@@ -1,5 +1,5 @@
 
-CPPFLAGS = -std=c++17 -g -Wall
+CPPFLAGS = -std=c++20 -g -Wall
 TARGET = coherence
 SRC_FILES := $(wildcard *.cpp)
 

@@ -8,7 +8,15 @@ Simulator::Simulator(std::vector<Core>& cores, std::vector<Cache>& caches,
 {}
 
 void Simulator::simulate() {
+  size_t curr_clock = 0;
   EventQueue events{};
+  // init events
+  for (auto& core : cores) {
+    events.insert(
+      std::make_pair(curr_clock, core.next_op(curr_clock))
+    );
+  }
+  // run simulation
   while (!events.empty()) {
     
   }

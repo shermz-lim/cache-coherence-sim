@@ -18,6 +18,8 @@ struct BusTransaction {
   CacheBlock block;
   // core op that triggered this transaction
   CoreOp op_trigger;
+
+  auto operator<=>(const BusTransaction&) const = default;
 };
 
 class Bus {

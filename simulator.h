@@ -6,10 +6,14 @@
 
 struct BusRequest {
   BusTransaction transc;
+
+  auto operator<=>(const BusRequest&) const = default;
 };
 
 struct BusResponse {
   BusTransaction transc;
+
+  auto operator<=>(const BusResponse&) const = default;
 };
 
 using Event = std::variant<BusRequest, BusResponse, CoreOp>;

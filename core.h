@@ -13,6 +13,8 @@ struct CoreOp {
   size_t core_no;
   CoreOpLabel label;
   size_t value;
+
+  auto operator<=>(const CoreOp&) const = default;
 };
 
 struct CoreStats {

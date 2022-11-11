@@ -9,7 +9,7 @@
 
 class Cache {
 public:
-  Cache(size_t size, size_t assoc, size_t block_size);
+  Cache(size_t core_no, size_t size, size_t assoc, size_t block_size);
 
   inline CacheBlock get_block_no(size_t mem_addr) {
     return mem_addr / block_size;
@@ -47,6 +47,7 @@ private:
 
   bool access_block(CacheBlock block_no, bool modify);
 
+  size_t core_no;
   size_t assoc;
   size_t block_size;
   std::vector<CacheSet> cache_sets;

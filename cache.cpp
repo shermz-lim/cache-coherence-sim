@@ -3,8 +3,9 @@
 
 #include "cache.h"
 
-Cache::Cache(size_t size, size_t assoc, size_t block_size)
-: assoc(assoc),
+Cache::Cache(size_t core_no, size_t size, size_t assoc, size_t block_size)
+: core_no(core_no),
+  assoc(assoc),
   block_size(block_size),
   cache_sets(size / block_size / assoc)
 {
@@ -55,9 +56,9 @@ std::optional<std::pair<CacheBlock, bool>> Cache::maybe_evict_block(CacheBlock b
 }
 
 void Cache::print_state() {
-  std::cout << "------- Cache state -------\n";
+  std::cout << "------- Cache " << core_no << " state -------\n";
   for (size_t i = 0; i < cache_sets.size(); i++) {
-    std::cout << "Cache set " << i << ":\n";
+    std::cout << "set " << i << ": ";
     const CacheSet& cache_set = cache_sets.at(i);
     for (CacheBlock no : cache_set.blocks_access_order) {
       std::cout << no << ":" << cache_set.blocks.at(no) << "; ";

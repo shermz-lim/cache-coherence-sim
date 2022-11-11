@@ -35,6 +35,8 @@ public:
   void complete_curr_op(size_t curr_time);
   CoreStats get_stats();
 
+  void print_state();
+
 private:
   struct CoreOpStats {
     std::optional<size_t> start_time{};
@@ -43,6 +45,7 @@ private:
 
   static CoreOpLabel get_op_label(int x);
 
+  size_t core_no;
   std::vector<CoreOp> ops;
   std::vector<CoreOpStats> ops_stats;
   size_t next_op_idx;

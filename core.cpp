@@ -1,9 +1,11 @@
 #include <assert.h>
+#include <iostream>
 
 #include "core.h"
 
 Core::Core(size_t core_no, const std::vector<std::pair<int, size_t>>& raw_ops)
-: ops(raw_ops.size()),
+: core_no(core_no),
+  ops(raw_ops.size()),
   ops_stats(raw_ops.size()),
   next_op_idx{0}
 {
@@ -46,6 +48,15 @@ CoreStats Core::get_stats() {
     }
   }
   return stats;
+}
+
+void Core::print_state() {
+  assert(next_op_idx > 0);
+  size_t i = next_op_idx - 1;
+  std::cout << "------- Core " << core_no << " state -------\n";
+  std::cout << "curr_op: " << i
+            << "; start_time: " << ops_stats.at(i).start_time.value()
+            << std::endl;
 }
 
 CoreOpLabel Core::get_op_label(int x) {

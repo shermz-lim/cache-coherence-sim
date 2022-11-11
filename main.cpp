@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
       core_no
     );
     cores.emplace_back(core_no, core_raw_ops);
-    caches.emplace_back(cache_size, assoc, block_size);
+    caches.emplace_back(core_no, cache_size, assoc, block_size);
   }
   Bus bus{};
   SharedLine shared_line{caches};
@@ -69,4 +69,7 @@ int main(int argc, char* argv[]) {
     );
     cache_controllers.push_back(std::move(c));
   }
+
+  Simulator s{cores, caches, bus, shared_line, cache_controllers};
+  s.simulate();
 }

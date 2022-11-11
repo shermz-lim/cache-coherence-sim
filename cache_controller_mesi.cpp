@@ -64,7 +64,7 @@ void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
   }
 }
 
-void CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
+bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
   
 }
 

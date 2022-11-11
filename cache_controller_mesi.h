@@ -10,7 +10,7 @@ public:
 
   void handle_core_op(CoreOp op) override;
   void handle_bus_resp(BusTransaction transc) override;
-  void handle_bus_transc(BusTransaction transc) override;
+  bool handle_bus_transc(BusTransaction transc) override;
 
 private:
   enum class State {

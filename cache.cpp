@@ -31,6 +31,16 @@ void Cache::insert_block(CacheBlock block_no) {
   cache_set.blocks_access_order.push_front(block_no);
 }
 
+bool Cache::remove_block(CacheBlock block_no) {
+  assert(has_block(block_no));
+
+  CacheSet& cache_set = get_cache_set(block_no);
+  bool dirty_bit = cache_set.blocks.at(block_no);
+  cache_set.blocks_access_order.remove(block_no);
+  cache_set.blocks.erase(block_no);
+  return dirty_bit;
+}
+
 std::optional<std::pair<CacheBlock, bool>> Cache::maybe_evict_block(CacheBlock block_no) {
   CacheSet& cache_set = get_cache_set(block_no);
   if (cache_set.blocks.size() < assoc) {

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "core.h"
 #include "bus.h"
 #include "shared_line.h"

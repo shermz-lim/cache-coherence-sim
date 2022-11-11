@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <optional>
 
@@ -20,7 +22,7 @@ struct CoreStats {
 
 class Core {
 public:
-  Core(std::vector<std::pair<int, size_t>> raw_ops);
+  Core(const std::vector<std::pair<int, size_t>>& raw_ops);
 
   inline bool has_next_op() const {
     return next_op_idx < ops.size();

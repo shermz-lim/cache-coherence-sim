@@ -2,7 +2,7 @@
 
 #include "core.h"
 
-Core::Core(std::vector<std::pair<int, size_t>> raw_ops)
+Core::Core(const std::vector<std::pair<int, size_t>>& raw_ops)
 : ops(raw_ops.size()),
   ops_stats(raw_ops.size()),
   next_op_idx{0}

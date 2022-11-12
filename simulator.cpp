@@ -12,9 +12,10 @@ void Simulator::simulate() {
   EventQueue events{};
   // init events
   for (auto& core : cores) {
-    events.insert(
-      std::make_pair(curr_clock, core.next_op(curr_clock))
-    );
+    events.insert(std::make_pair(
+      curr_clock,
+      CoreOpStart{core.next_op(curr_clock)}
+    ));
   }
   // run simulation
   while (!events.empty()) {

@@ -16,7 +16,19 @@ struct BusResponse {
   auto operator<=>(const BusResponse&) const = default;
 };
 
-using Event = std::variant<BusRequest, BusResponse, CoreOp>;
+struct CoreOpStart {
+  CoreOp op;
+
+  auto operator<=>(const CoreOpStart&) const = default;
+};
+
+struct CoreOpEnd {
+  CoreOp op;
+
+  auto operator<=>(const CoreOpEnd&) const = default;
+};
+
+using Event = std::variant<BusRequest, BusResponse, CoreOpStart, CoreOpEnd>;
 using EventQueue = std::set<std::pair<size_t, Event>>;
 
 class Simulator {

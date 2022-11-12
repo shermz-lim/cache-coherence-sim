@@ -1,10 +1,11 @@
 #include <assert.h>
+#include <iostream>
 
 #include "cache_controller_mesi.h"
 
-CacheControllerMesi::CacheControllerMesi(Cache& cache, Bus& bus,
+CacheControllerMesi::CacheControllerMesi(size_t core_no, Cache& cache, Bus& bus,
                                          SharedLine& shared_line)
-: CacheController(cache, bus, shared_line)
+: CacheController(core_no, cache, bus, shared_line)
 {}
 
 CacheControllerMesi::~CacheControllerMesi() = default;
@@ -95,6 +96,27 @@ bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
   }
   assert(false);
   return false;
+}
+
+void CacheControllerMesi::print_state() {
+  std::cout << "------- MesiController " << core_no << " state -------";
+  for (const auto& it : blocks_state) {
+    std::cout << std::endl << it.first << ":" << state_to_string(it.second);
+  }
+  std::cout << std::endl;
+}
+
+std::string_view CacheControllerMesi::state_to_string(State s) {
+  switch (s) {
+    case State::INVALID:
+      return "INVALID";
+    case State::EXCLUSIVE:
+      return "EXCLUSIVE";
+    case State::SHARED:
+      return "SHARED";
+    case State::MODIFIED:
+      return "MODIFIED";
+  }
 }
 
 CacheControllerMesi::State CacheControllerMesi::get_state(CacheBlock block_no) {

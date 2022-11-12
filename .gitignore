@@ -1,3 +1,4 @@
 *.data
 coherence
 *.dSYM
+.vscode

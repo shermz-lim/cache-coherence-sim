@@ -14,9 +14,12 @@ public:
   // handles snooped bus transaction from other cores. Returns whether flush to memory is required
   virtual bool handle_bus_transc(BusTransaction transc) = 0;
 
-protected:
-  CacheController(Cache& cache, Bus& bus, SharedLine& shared_line);
+  virtual void print_state() = 0;
 
+protected:
+  CacheController(size_t core_no, Cache& cache, Bus& bus, SharedLine& shared_line);
+
+  size_t core_no;
   Cache& cache;
   Bus& bus;
   SharedLine& shared_line;

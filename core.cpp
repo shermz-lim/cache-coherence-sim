@@ -1,7 +1,28 @@
 #include <assert.h>
 #include <iostream>
+#include <sstream>
 
 #include "core.h"
+
+std::string CoreOp::to_string() {
+  std::stringstream ss{};
+  ss << "CoreOp{" << core_no 
+     << "," << label_to_string()
+     << "," << value
+     << "}";
+  return ss.str();
+}
+
+std::string_view CoreOp::label_to_string() {
+  switch (label) {
+    case CoreOpLabel::LOAD:
+      return "LOAD";
+    case CoreOpLabel::STORE:
+      return "STORE";
+    case CoreOpLabel::OTHER:
+      return "OTHER";
+  }
+}
 
 Core::Core(size_t core_no, const std::vector<std::pair<int, size_t>>& raw_ops)
 : core_no(core_no),
@@ -54,7 +75,7 @@ void Core::print_state() {
   assert(next_op_idx > 0);
   size_t i = next_op_idx - 1;
   std::cout << "------- Core " << core_no << " state -------\n";
-  std::cout << "curr_op: " << i
+  std::cout << "curr_op: " << ops.at(i).to_string()
             << "; start_time: " << ops_stats.at(i).start_time.value()
             << std::endl;
 }

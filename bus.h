@@ -1,6 +1,6 @@
 #pragma once
 
-#include <queue>
+#include <list>
 #include <optional>
 
 #include "core.h"
@@ -20,6 +20,10 @@ struct BusTransaction {
   CoreOp op_trigger;
 
   auto operator<=>(const BusTransaction&) const = default;
+  std::string to_string();
+
+private:
+  std::string_view type_to_string();
 };
 
 class Bus {
@@ -29,7 +33,7 @@ public:
   }
 
   inline void add_request(BusTransaction transc) {
-    requests.push(transc);
+    requests.push_back(transc);
   }
 
   inline bool has_curr_transc() {
@@ -42,7 +46,9 @@ public:
 
   BusTransaction next_transc();
 
+  void print_state();
+
 private:
-  std::queue<BusTransaction> requests;
+  std::list<BusTransaction> requests;
   std::optional<BusTransaction> curr_transc;
 };

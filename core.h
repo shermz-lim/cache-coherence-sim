@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <optional>
+#include <string_view>
 
 enum class CoreOpLabel {
   LOAD,
@@ -15,6 +16,10 @@ struct CoreOp {
   size_t value;
 
   auto operator<=>(const CoreOp&) const = default;
+  std::string to_string();
+
+private:
+  std::string_view label_to_string();
 };
 
 struct CoreStats {

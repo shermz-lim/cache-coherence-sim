@@ -20,8 +20,6 @@ std::string_view BusTransaction::type_to_string() {
       return "BUS_RDX";
     case BusTransactionType::BUS_WB:
       return "BUS_WB";
-    case BusTransactionType::BUS_UPGR:
-      return "BUS_UPGR";
   }
 }
 

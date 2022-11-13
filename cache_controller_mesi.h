@@ -10,9 +10,10 @@ public:
   CacheControllerMesi(size_t core_no, Cache& cache, Bus& bus, SharedLine& shared_line);
   ~CacheControllerMesi() override;
 
-  void handle_core_op(CoreOp op) override;
+  bool handle_core_op(CoreOp op) override;
   void handle_bus_resp(BusTransaction transc) override;
   bool handle_bus_transc(BusTransaction transc) override;
+  void evict_block(CacheBlock block_no) override;
 
   void print_state() override;
 

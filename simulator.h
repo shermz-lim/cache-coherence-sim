@@ -60,6 +60,8 @@ private:
     Simulator& sim;
   };
 
+  size_t curr_clock{0};
+  EventQueue events{};
   std::vector<Core>& cores;
   std::vector<Cache>& caches;
   Bus& bus;

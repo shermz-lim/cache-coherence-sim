@@ -10,7 +10,7 @@ CacheControllerMesi::CacheControllerMesi(size_t core_no, Cache& cache, Bus& bus,
 
 CacheControllerMesi::~CacheControllerMesi() = default;
 
-void CacheControllerMesi::handle_core_op(CoreOp op) {
+bool CacheControllerMesi::handle_core_op(CoreOp op) {
   assert(op.label != CoreOpLabel::OTHER);
 
   CacheBlock block_no = cache.get_block_no(op.value);
@@ -19,7 +19,7 @@ void CacheControllerMesi::handle_core_op(CoreOp op) {
   switch (get_state(block_no)) {
     case State::INVALID:
       bus.add_request(BusTransaction{transc_t, block_no, op});
-      return;
+      return false;
     case State::EXCLUSIVE:
       if (read) {
         cache.read_block(block_no);
@@ -27,23 +27,22 @@ void CacheControllerMesi::handle_core_op(CoreOp op) {
         update_state(block_no, State::MODIFIED);
         cache.write_block(block_no);
       }
-      return;
+      return true;
     case State::SHARED:
       if (read) {
         cache.read_block(block_no);
+        return true;
       } else {
-        bus.add_request(BusTransaction{BusTransactionType::BUS_UPGR, block_no, op});
-        update_state(block_no, State::MODIFIED);
-        cache.write_block(block_no);
+        bus.add_request(BusTransaction{BusTransactionType::BUS_RDX, block_no, op});
+        return false;
       }
-      return;
     case State::MODIFIED:
       if (read) {
         cache.read_block(block_no);
       } else {
         cache.write_block(block_no);
       }
-      return;
+      return true;
   }
 }
 
@@ -54,7 +53,7 @@ void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
     State new_state = shared_line.assert_line(block_no) ? State::SHARED : State::EXCLUSIVE;
     update_state(block_no, new_state);
     cache.read_block(block_no);
-  } else if (state == State::INVALID && transc.t == BusTransactionType::BUS_RDX) {
+  } else if (transc.t == BusTransactionType::BUS_RDX) {
     update_state(block_no, State::MODIFIED);
     cache.write_block(block_no);
   } else {
@@ -81,7 +80,7 @@ bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
       // no cache-to-cache sharing
       if (t == BusTransactionType::BUS_RD) {
         return false;
-      } else if (t == BusTransactionType::BUS_RDX || t == BusTransactionType::BUS_UPGR) {
+      } else if (t == BusTransactionType::BUS_RDX) {
         update_state(block_no, State::INVALID);
         return false;
       }
@@ -96,6 +95,10 @@ bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
   }
   assert(false);
   return false;
+}
+
+void CacheControllerMesi::evict_block(CacheBlock block_no) {
+  blocks_state.at(block_no) = State::INVALID;
 }
 
 void CacheControllerMesi::print_state() {

@@ -9,8 +9,7 @@
 enum class BusTransactionType {
   BUS_RD,
   BUS_RDX,
-  BUS_WB,
-  BUS_UPGR
+  BUS_WB
 };
 
 struct BusTransaction {

@@ -40,6 +40,26 @@ public:
   void simulate();
 
 private:
+  struct EventHandler {
+    EventHandler(Simulator& sim);
+    void operator()(BusRequest&);
+    void operator()(BusResponse&);
+    void operator()(CoreOpStart&);
+    void operator()(CoreOpEnd&);
+
+    Simulator& sim;
+  };
+
+  struct EventString {
+    EventString(Simulator& sim);
+    std::string operator()(BusRequest&);
+    std::string operator()(BusResponse&);
+    std::string operator()(CoreOpStart&);
+    std::string operator()(CoreOpEnd&);
+
+    Simulator& sim;
+  };
+
   std::vector<Core>& cores;
   std::vector<Cache>& caches;
   Bus& bus;

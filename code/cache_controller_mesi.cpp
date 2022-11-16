@@ -58,7 +58,7 @@ bool CacheControllerMesi::handle_core_op(CoreOp op) {
   }
 }
 
-void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
+bool CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
   CacheBlock block_no = transc.block;
   State state = get_state(block_no);
   assert(transc.op_trigger.core_no == core_no);
@@ -71,10 +71,12 @@ void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
     } else {
       stats.priv_access++;
     }
+    return true;
   } else if (transc.t == BusTransactionType::BUS_RDX) {
     update_state(block_no, State::MODIFIED);
     cache.write_block(block_no);
     stats.priv_access++;
+    return true;
   } else {
     assert(false);
   }

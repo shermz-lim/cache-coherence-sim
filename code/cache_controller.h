@@ -18,7 +18,8 @@ public:
   // returns whether it's completed successfully (cache hit in 1 cycle)
   virtual bool handle_core_op(CoreOp op) = 0;
   // handles response to previous transaction placed on bus in handle_core_op
-  virtual void handle_bus_resp(BusTransaction transc) = 0;
+  // returns whether op can be completed (do cache hit in 1 cycle)
+  virtual bool handle_bus_resp(BusTransaction transc) = 0;
   // handles snooped bus transaction from other cores. Returns whether flush to memory is required
   virtual bool handle_bus_transc(BusTransaction transc) = 0;
   // evict block

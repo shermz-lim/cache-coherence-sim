@@ -103,11 +103,13 @@ void Simulator::EventHandler::operator()(BusResponse& resp) {
     sim.add_event(sim.curr_clock, CoreOpStart{transc.op_trigger});
   
   } else if (transc.t == BusTransactionType::BUS_RD || transc.t == BusTransactionType::BUS_RDX) { // a read
-    sim.cache_controllers.at(transc.op_trigger.core_no)->handle_bus_resp(
+    bool done = sim.cache_controllers.at(transc.op_trigger.core_no)->handle_bus_resp(
       transc
     );
     // 1 cycle for cache hit
-    sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{transc.op_trigger});
+    if (done) {
+      sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{transc.op_trigger});
+    }
 
   } else {
     assert(false);

@@ -11,7 +11,7 @@ public:
   ~CacheControllerMesi() override;
 
   bool handle_core_op(CoreOp op) override;
-  void handle_bus_resp(BusTransaction transc) override;
+  bool handle_bus_resp(BusTransaction transc) override;
   bool handle_bus_transc(BusTransaction transc) override;
   void evict_block(CacheBlock block_no) override;
 

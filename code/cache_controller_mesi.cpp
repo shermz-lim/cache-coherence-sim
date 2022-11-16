@@ -115,7 +115,7 @@ bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
 }
 
 void CacheControllerMesi::evict_block(CacheBlock block_no) {
-  blocks_state.erase(block_no);
+  update_state(block_no, State::INVALID);
 }
 
 void CacheControllerMesi::print_state() {

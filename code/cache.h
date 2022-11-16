@@ -24,13 +24,11 @@ public:
   void insert_block(CacheBlock block_no);
   // remove block, and returns whether it's dirty
   bool remove_block(CacheBlock block_no);
-  // maybe evict a block if there's no space to insert CacheBlock with block_no
-  // returns evicted cache block if any, and whether it's dirty
-  std::optional<std::pair<CacheBlock, bool>> maybe_evict_block(CacheBlock block_no);
   // void clear dirty bit of block, assumes it's there
   void clear_dirty_bit(CacheBlock block_no);
-  // returns whether block is dirty, assumes it's there
-  bool is_dirty(CacheBlock block_no);
+  // returns block to evict if there's no space to insert CacheBlock with block_no
+  // returns block and whether it's dirty
+  std::optional<std::pair<CacheBlock, bool>> block_to_evict(CacheBlock block_no);
   void print_state();
 
 private:

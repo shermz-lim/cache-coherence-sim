@@ -42,19 +42,6 @@ bool Cache::remove_block(CacheBlock block_no) {
   return dirty_bit;
 }
 
-std::optional<std::pair<CacheBlock, bool>> Cache::maybe_evict_block(CacheBlock block_no) {
-  CacheSet& cache_set = get_cache_set(block_no);
-  if (cache_set.blocks.size() < assoc) {
-    return std::nullopt;
-  } else {
-    CacheBlock to_evict = cache_set.blocks_access_order.back();
-    bool dirty_bit = cache_set.blocks.at(to_evict);
-    cache_set.blocks_access_order.remove(to_evict);
-    cache_set.blocks.erase(to_evict);
-    return std::make_pair(to_evict, dirty_bit);
-  }
-}
-
 void Cache::clear_dirty_bit(CacheBlock block_no) {
   assert(has_block(block_no));
   CacheSet& cache_set = get_cache_set(block_no);
@@ -62,10 +49,15 @@ void Cache::clear_dirty_bit(CacheBlock block_no) {
   cache_set.blocks.at(block_no) = false;
 }
 
-bool Cache::is_dirty(CacheBlock block_no) {
-  assert(has_block(block_no));
+std::optional<std::pair<CacheBlock, bool>> Cache::block_to_evict(CacheBlock block_no) {
   CacheSet& cache_set = get_cache_set(block_no);
-  return cache_set.blocks.at(block_no);
+  if (cache_set.blocks.size() < assoc) {
+    return std::nullopt;
+  } else {
+    CacheBlock to_evict = cache_set.blocks_access_order.back();
+    bool dirty_bit = cache_set.blocks.at(to_evict);
+    return std::make_pair(to_evict, dirty_bit);
+  }
 }
 
 void Cache::print_state() {

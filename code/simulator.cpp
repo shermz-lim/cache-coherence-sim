@@ -62,10 +62,18 @@ void Simulator::EventHandler::operator()(BusRequest& req) {
   size_t resp_cycles = 0;
 
   if (transc.t == BusTransactionType::BUS_WB) {
-    auto& cache = sim.caches.at(transc.op_trigger.core_no);
-    // actually do write back if block is still present + is dirty
-    if (cache.has_block(transc.block) && cache.is_dirty(transc.block)) {
-      resp_cycles += MEM_ACCESS_TIME;
+    size_t core_no = transc.op_trigger.core_no;
+    auto& cache = sim.caches.at(core_no);
+    // actually do write back if set is still full + is dirty
+    auto evicted_block = cache.block_to_evict(
+      cache.get_block_no(transc.op_trigger.value)
+    );
+    if (evicted_block) {
+      assert(evicted_block->first == transc.block);
+      sim.cache_controllers.at(core_no)->evict_block(evicted_block->first);
+      if (evicted_block->second) {
+        resp_cycles += MEM_ACCESS_TIME;
+      }
     }
 
   } else if (transc.t == BusTransactionType::BUS_RD || transc.t == BusTransactionType::BUS_RDX) { // a read
@@ -122,16 +130,17 @@ void Simulator::EventHandler::operator()(CoreOpStart& op_s) {
   // handles cache miss and block eviction
   if (!cache.has_block(block_no)) {
     // maybe need evict block
-    auto evicted_block = cache.maybe_evict_block(block_no);
+    auto evicted_block = cache.block_to_evict(block_no);
     if (evicted_block.has_value()) {
-      controller.evict_block(evicted_block->first);
       if (evicted_block->second) { // block is dirty, need write back
         sim.bus.add_request(
           BusTransaction{BusTransactionType::BUS_WB, evicted_block->first, op}
         );
         return;
-      }
-      // evicted block is clean, continue
+      } else {
+        // block is clean, continue
+        controller.evict_block(evicted_block->first);
+      }      
     }
   }
 

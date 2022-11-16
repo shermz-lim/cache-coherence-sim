@@ -43,6 +43,9 @@ void Bus::curr_transc_complete(BusTransaction transc) {
 }
 
 std::vector<BusTransaction> Bus::next_transcs() {
+  if (curr_transcs.size() >= NUM_CONCURRENT_TRANSC) {
+    return std::vector<BusTransaction>{};
+  }
   std::vector<BusTransaction> nxt;
   for (auto& it : requests) {
     if (curr_transcs.count(it.first)) continue;

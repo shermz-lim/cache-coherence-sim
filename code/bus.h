@@ -7,6 +7,8 @@
 #include "core.h"
 #include "cache_types.h"
 
+const size_t NUM_CONCURRENT_TRANSC = 4;
+
 enum class BusTransactionType {
   BUS_RD,
   BUS_RDX,

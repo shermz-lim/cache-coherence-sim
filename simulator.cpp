@@ -12,10 +12,7 @@ Simulator::Simulator(std::vector<Core>& cores, std::vector<Cache>& caches,
 void Simulator::simulate() {
   // init events
   for (auto& core : cores) {
-    events.insert(std::make_pair(
-      curr_clock,
-      CoreOpStart{core.next_op(curr_clock)}
-    ));
+    add_event(curr_clock, CoreOpStart{core.next_op(curr_clock)});
   }
   // run simulation
   EventHandler event_handler{*this};
@@ -42,6 +39,12 @@ void Simulator::simulate() {
     // event processing
     curr_clock = time;
     std::visit(event_handler, event);
+
+    // bus arbiter: get next bus transaction if bus is free
+    if (!bus.has_curr_transc() && bus.has_request()) {
+      auto transc = bus.next_transc();
+      add_event(curr_clock, BusRequest{transc});
+    }
   }
 }
 
@@ -49,19 +52,49 @@ Simulator::EventHandler::EventHandler(Simulator& sim)
 : sim(sim)
 {}
 
-void Simulator::EventHandler::operator()(BusRequest&) {
+void Simulator::EventHandler::operator()(BusRequest& req) {
+  auto& transc = req.transc;
+  size_t resp_cycles = 0;
+
+  if (transc.t == BusTransactionType::BUS_WB) {
+    resp_cycles += MEM_ACCESS_TIME;
+
+  } else { // a read
+    bool flush = false;
+    for (size_t core_no = 0; core_no < sim.cores.size(); core_no++) {
+      if (transc.op_trigger.core_no == core_no) continue;
+      bool flush_i = sim.cache_controllers.at(core_no)->handle_bus_transc(
+        transc
+      );
+      flush = flush || flush_i;
+    }
+
+    // time to flush or not + time to read
+    resp_cycles += ((flush ? MEM_ACCESS_TIME : 0) + MEM_ACCESS_TIME);
+  }
+
+  sim.add_event(sim.curr_clock + resp_cycles, BusResponse{transc});
 }
 
-void Simulator::EventHandler::operator()(BusResponse&) {
+void Simulator::EventHandler::operator()(BusResponse& resp) {
+  sim.bus.curr_transc_complete();
+  auto& transc = resp.transc;
+  if (transc.t == BusTransactionType::BUS_WB) { // eviction successful
+    // restart operation
+    sim.add_event(sim.curr_clock, CoreOpStart{transc.op_trigger});
+  } else { // bus read complete
+    sim.cache_controllers.at(transc.op_trigger.core_no)->handle_bus_resp(
+      transc
+    );
+    // 1 cycle for cache hit
+    sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{transc.op_trigger});
+  }
 }
 
 void Simulator::EventHandler::operator()(CoreOpStart& op_s) {
   CoreOp& op = op_s.op;
   if (op.label == CoreOpLabel::OTHER) { // compute operations
-    sim.events.insert(std::make_pair(
-      sim.curr_clock + op.value,
-      CoreOpEnd{op}
-    ));
+    sim.add_event(sim.curr_clock + op.value, CoreOpEnd{op});
     return;
   }
 
@@ -90,10 +123,7 @@ void Simulator::EventHandler::operator()(CoreOpStart& op_s) {
   bool done = controller.handle_core_op(op);
   if (done) {
     // 1 cycle for cache hit
-    sim.events.insert(std::make_pair(
-      sim.curr_clock + 1,
-      CoreOpEnd{op}
-    ));
+    sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{op});
   }
 }
 
@@ -102,10 +132,7 @@ void Simulator::EventHandler::operator()(CoreOpEnd& op_e) {
   Core& core = sim.cores.at(op.core_no);
   core.complete_curr_op(sim.curr_clock);
   if (core.has_next_op()) {
-    sim.events.insert(std::make_pair(
-      sim.curr_clock,
-      CoreOpStart{core.next_op(sim.curr_clock)}
-    ));
+    sim.add_event(sim.curr_clock, CoreOpStart{core.next_op(sim.curr_clock)});
   }
 }
 

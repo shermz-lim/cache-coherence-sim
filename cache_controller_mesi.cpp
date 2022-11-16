@@ -49,6 +49,7 @@ bool CacheControllerMesi::handle_core_op(CoreOp op) {
 void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
   CacheBlock block_no = transc.block;
   State state = get_state(block_no);
+  assert(transc.op_trigger.core_no == core_no);
   if (state == State::INVALID && transc.t == BusTransactionType::BUS_RD) {
     State new_state = shared_line.assert_line(block_no) ? State::SHARED : State::EXCLUSIVE;
     update_state(block_no, new_state);
@@ -64,6 +65,7 @@ void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
 bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
   CacheBlock block_no = transc.block;
   BusTransactionType t = transc.t;
+  assert(transc.op_trigger.core_no != core_no);
   switch (get_state(block_no)) {
     case State::INVALID:
       return false;

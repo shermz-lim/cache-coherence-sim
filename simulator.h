@@ -4,6 +4,9 @@
 
 #include "cache_controller.h"
 
+const size_t CACHE_HIT_TIME = 1;
+const size_t MEM_ACCESS_TIME = 100;
+
 struct BusRequest {
   BusTransaction transc;
 
@@ -59,6 +62,10 @@ private:
 
     Simulator& sim;
   };
+
+  inline void add_event(size_t time, const Event& e) {
+    events.insert(std::make_pair(time, e));
+  }
 
   size_t curr_clock{0};
   EventQueue events{};

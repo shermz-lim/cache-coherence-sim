@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <unordered_map>
 #include <string_view>
 
 #include "cache_controller.h"
@@ -30,5 +30,5 @@ private:
   State get_state(CacheBlock block_no);
   void update_state(CacheBlock block_no, State state);
 
-  std::map<CacheBlock, State> blocks_state{};
+  std::unordered_map<CacheBlock, State> blocks_state{};
 };

@@ -6,12 +6,16 @@
 
 #include "simulator.h"
 #include "cache_controller_mesi.h"
+#include "cache_controller_dragon.h"
 
 const size_t DEF_CACHE_SIZE = 4096;
 const size_t DEF_ASSOC = 2;
 const size_t DEF_BLOCK_SIZE = 32;
 const std::string DATA_DIR{"data"};
 const size_t NUM_CORES = 4;
+
+const std::string MESI_PROTOCOL_NAME{"MESI"};
+const std::string DRAGON_PROTOCOL_NAME{"Dragon"};
 
 std::vector<std::pair<int, size_t>> parse_core_input(
   std::string input_file,
@@ -64,9 +68,18 @@ int main(int argc, char* argv[]) {
   SharedLine shared_line{caches};
   std::vector<std::unique_ptr<CacheController>> cache_controllers{};
   for (size_t core_no = 0; core_no < NUM_CORES; core_no++) {
-    auto c = std::make_unique<CacheControllerMesi>(
-      core_no, caches.at(core_no), bus, shared_line
-    );
+    std::unique_ptr<CacheController> c{};
+    if (protocol == MESI_PROTOCOL_NAME) {
+      c = std::make_unique<CacheControllerMesi>(
+        core_no, caches.at(core_no), bus, shared_line
+      );
+    } else if (protocol == DRAGON_PROTOCOL_NAME) {
+      c = std::make_unique<CacheControllerDragon>(
+        core_no, caches.at(core_no), bus, shared_line
+      );
+    } else {
+      throw std::runtime_error{"invalid protocol name"};
+    }
     cache_controllers.push_back(std::move(c));
   }
 

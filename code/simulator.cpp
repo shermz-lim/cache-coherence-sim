@@ -43,9 +43,9 @@ void Simulator::simulate() {
     curr_clock = time;
     std::visit(event_handler, event);
 
-    // bus arbiter: get next bus transaction if bus is free
-    if (!bus.has_curr_transc() && bus.has_request()) {
-      auto transc = bus.next_transc();
+    // bus arbiter: get next bus transactions if bus is free
+    auto next_transcs = bus.next_transcs();
+    for (auto& transc : next_transcs) {
       add_event(curr_clock, BusRequest{transc});
     }
   }
@@ -104,8 +104,8 @@ void Simulator::EventHandler::operator()(BusRequest& req) {
 }
 
 void Simulator::EventHandler::operator()(BusResponse& resp) {
-  sim.bus.curr_transc_complete();
   auto& transc = resp.transc;
+  sim.bus.curr_transc_complete(transc);
   if (transc.t == BusTransactionType::BUS_WB) { // eviction successful
     // restart operation
     sim.add_event(sim.curr_clock, CoreOpStart{transc.op_trigger});

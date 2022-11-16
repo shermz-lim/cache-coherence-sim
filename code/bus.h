@@ -1,6 +1,7 @@
 #pragma once
 
 #include <list>
+#include <unordered_map>
 #include <optional>
 
 #include "core.h"
@@ -33,30 +34,22 @@ struct BusStats {
 
 class Bus {
 public:
-  inline bool has_request() {
-    return !requests.empty();
-  }
-
   inline void add_request(BusTransaction transc) {
-    requests.push_back(transc);
-  }
-
-  inline bool has_curr_transc() {
-    return curr_transc.has_value();
+    requests[transc.block].push_back(transc);
   }
 
   inline BusStats get_stats() {
     return stats;
   }
 
-  void curr_transc_complete();
+  void curr_transc_complete(BusTransaction transc);
 
-  BusTransaction next_transc();
+  std::vector<BusTransaction> next_transcs();
 
   void print_state();
 
 private:
-  std::list<BusTransaction> requests;
-  std::optional<BusTransaction> curr_transc;
+  std::unordered_map<CacheBlock, std::list<BusTransaction>> requests;
+  std::unordered_map<CacheBlock, BusTransaction> curr_transcs;
   BusStats stats;
 };

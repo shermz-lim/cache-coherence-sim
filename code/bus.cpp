@@ -25,8 +25,11 @@ std::string_view BusTransaction::type_to_string() {
   }
 }
 
-void Bus::curr_transc_complete() {
-  switch (curr_transc.value().t) {
+void Bus::curr_transc_complete(BusTransaction transc) {
+  CacheBlock block_no = transc.block;
+  assert(curr_transcs.at(block_no) == transc);
+  curr_transcs.erase(block_no);
+  switch (transc.t) {
     case BusTransactionType::BUS_RD:
     case BusTransactionType::BUS_WB:
       stats.blks_traffic++;
@@ -37,23 +40,35 @@ void Bus::curr_transc_complete() {
       stats.num_inv_upds++;
       break;
   }
-  curr_transc = std::nullopt;
 }
 
-BusTransaction Bus::next_transc() {
-  BusTransaction transc = requests.front();
-  requests.pop_front();
-  curr_transc = transc;
-  return transc;
+std::vector<BusTransaction> Bus::next_transcs() {
+  std::vector<BusTransaction> nxt;
+  for (auto& it : requests) {
+    if (curr_transcs.count(it.first)) continue;
+    BusTransaction transc = it.second.front();
+    it.second.pop_front();
+    curr_transcs[it.first] = transc;
+    nxt.push_back(transc);
+  }
+  for (auto& transc : nxt) {
+    if (requests.at(transc.block).empty()) requests.erase(transc.block);
+  }
+  return nxt;
 }
 
 void Bus::print_state() {
   std::cout << "------- Bus state -------\n";
-  std::cout << "curr: "
-            << (curr_transc.has_value() ? curr_transc.value().to_string() : "")
-            << "\nrequests: ";
-  for (auto& transc : requests) {
-    std::cout << transc.to_string() << "; ";
+  std::cout << "current:\n";
+  for (auto& it : curr_transcs) {
+    std::cout << it.first << ": " << it.second.to_string() << std::endl;
   }
-  std::cout << std::endl;
+  std::cout << "requests:\n";
+  for (auto& it : requests) {
+    std::cout << it.first << ": ";
+    for (auto& transc : it.second) {
+      std::cout << transc.to_string() << "; ";
+    }
+    std::cout << std::endl;
+  }  
 }

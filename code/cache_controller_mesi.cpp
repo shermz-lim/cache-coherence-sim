@@ -20,10 +20,14 @@ bool CacheControllerMesi::handle_core_op(CoreOp op) {
   }
   
   bool read = op.label == CoreOpLabel::LOAD;
-  BusTransactionType transc_t = read ? BusTransactionType::BUS_RD : BusTransactionType::BUS_RDX;
   switch (get_state(block_no)) {
     case State::INVALID:
-      bus.add_request(BusTransaction{transc_t, block_no, op});
+      bus.add_request(
+        BusTransaction{
+          read ? BusTransactionType::BUS_RD : BusTransactionType::BUS_RDX,
+          block_no, op
+        }
+      );
       return false;
     case State::EXCLUSIVE:
       if (read) {

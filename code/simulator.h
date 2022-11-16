@@ -36,8 +36,8 @@ using EventQueue = std::set<std::pair<size_t, Event>>;
 
 class Simulator {
 public:
-  Simulator(std::vector<Core>& cores, std::vector<Cache>& caches,
-            Bus& bus, SharedLine& shared_line,
+  Simulator(size_t block_size, std::vector<Core>& cores,
+            std::vector<Cache>& caches, Bus& bus,
             std::vector<std::unique_ptr<CacheController>>& cache_controllers);
 
   void simulate();
@@ -67,11 +67,13 @@ private:
     events.insert(std::make_pair(time, e));
   }
 
+  void output_stats();
+
   size_t curr_clock{0};
   EventQueue events{};
+  size_t block_size;
   std::vector<Core>& cores;
   std::vector<Cache>& caches;
   Bus& bus;
-  SharedLine& shared_line;
   std::vector<std::unique_ptr<CacheController>>& cache_controllers;
 };

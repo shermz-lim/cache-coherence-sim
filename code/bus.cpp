@@ -23,6 +23,22 @@ std::string_view BusTransaction::type_to_string() {
   }
 }
 
+void Bus::curr_transc_complete() {
+  switch (curr_transc.value().t) {
+    case BusTransactionType::BUS_RD:
+      stats.blks_traffic++;
+      break;
+    case BusTransactionType::BUS_RDX:
+      stats.blks_traffic++;
+      stats.num_inv_upds++;
+      break;
+    case BusTransactionType::BUS_WB:
+      stats.blks_traffic++;
+      break;
+  }
+  curr_transc = std::nullopt;
+}
+
 BusTransaction Bus::next_transc() {
   BusTransaction transc = requests.front();
   requests.pop_front();

@@ -51,15 +51,22 @@ void Core::complete_curr_op(size_t curr_time) {
 }
 
 CoreStats Core::get_stats() {
+  assert(next_op_idx == ops.size());
+
   CoreStats stats{};
+  stats.exec_cycles = ops_stats.back().end_time.value();
+
   for (size_t i = 0; i < next_op_idx; i++) {
     CoreOp& op = ops.at(i);
     CoreOpStats& op_stats = ops_stats.at(i);
     size_t op_cycles = op_stats.end_time.value() - op_stats.start_time.value();
     switch (op.label) {
       case CoreOpLabel::LOAD:
+        stats.load_insns++;
+        stats.idle_cycles += op_cycles;
+        continue;
       case CoreOpLabel::STORE:
-        stats.mem_insns++;
+        stats.store_insns++;
         stats.idle_cycles += op_cycles;
         continue;
       case CoreOpLabel::OTHER:
@@ -68,6 +75,7 @@ CoreStats Core::get_stats() {
         continue;
     }
   }
+
   return stats;
 }
 

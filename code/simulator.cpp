@@ -1,11 +1,12 @@
 #include <iostream>
+#include <iomanip>
 
 #include "simulator.h"
 
-Simulator::Simulator(std::vector<Core>& cores, std::vector<Cache>& caches,
-                     Bus& bus, SharedLine& shared_line,
-                     std::vector<std::unique_ptr<CacheController>>& cache_controllers)
-: cores(cores), caches(caches), bus(bus), shared_line(shared_line),
+Simulator::Simulator(size_t block_size, std::vector<Core>& cores,
+           std::vector<Cache>& caches, Bus& bus,
+           std::vector<std::unique_ptr<CacheController>>& cache_controllers)
+: block_size(block_size), cores(cores), caches(caches), bus(bus),
   cache_controllers(cache_controllers)
 {}
 
@@ -48,6 +49,8 @@ void Simulator::simulate() {
       add_event(curr_clock, BusRequest{transc});
     }
   }
+
+  output_stats();
 }
 
 Simulator::EventHandler::EventHandler(Simulator& sim)
@@ -156,4 +159,48 @@ std::string Simulator::EventString::operator()(CoreOpStart& op_s) {
 
 std::string Simulator::EventString::operator()(CoreOpEnd& op_e) {
   return "CoreOpEnd: " + op_e.op.to_string();
+}
+
+void Simulator::output_stats() {
+  size_t o_exec_cycles = 0;
+  size_t o_priv_access = 0;
+  size_t o_shared_access = 0;
+  for (size_t core_no = 0; core_no < cores.size(); core_no++) {
+    CoreStats core_stats = cores.at(core_no).get_stats();
+    CacheControllerStats cache_stats = cache_controllers.at(core_no)->get_stats();
+
+    assert(core_stats.exec_cycles == (core_stats.compute_cycles + core_stats.idle_cycles));
+    assert(cache_stats.tot_access == (cache_stats.priv_access + cache_stats.shared_access));
+
+    std::cout << "========= Core " << core_no << " Stats ========="
+              << "\nExecution Cycles: " << core_stats.exec_cycles
+              << "\nCompute Cycles: " << core_stats.compute_cycles
+              << "\nLoad Instructions: " << core_stats.load_insns
+              << "\nStore Instructions: " << core_stats.store_insns
+              << "\nIdle Cycles: " << core_stats.idle_cycles
+              << "\nCache Misses: " << cache_stats.misses
+              << "\nCache Accesses: " << cache_stats.tot_access
+              << "\nCache Miss Rate: "
+              << std::setprecision(5)
+              << static_cast<double>(cache_stats.misses) / cache_stats.tot_access * 100
+              << "%"
+              << "\nPrivate Accesses: " << cache_stats.priv_access
+              << "\nShared Accesses: " << cache_stats.shared_access
+              << std::endl;
+
+    o_exec_cycles = std::max(o_exec_cycles, core_stats.exec_cycles);
+    o_priv_access += cache_stats.priv_access;
+    o_shared_access += cache_stats.shared_access;
+  }
+
+  BusStats bus_stats = bus.get_stats();
+  std::cout << "========= Overall Stats ========="
+            << "\nExecution Cycles: " << o_exec_cycles
+            << "\nData Traffic (bytes): " << (bus_stats.blks_traffic * block_size)
+            << "\nNumber of invalidations/updates: " << bus_stats.num_inv_upds
+            << "\nPrivate Accesses: " << o_priv_access
+            << "\nShared Accesses: " << o_shared_access
+            << std::endl;
+  
+  std::cout << std::endl;
 }

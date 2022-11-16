@@ -4,6 +4,13 @@
 #include "bus.h"
 #include "shared_line.h"
 
+struct CacheControllerStats {
+  size_t misses{0};
+  size_t tot_access{0};
+  size_t priv_access{0};
+  size_t shared_access{0};
+};
+
 class CacheController {
 public:
   virtual ~CacheController();
@@ -19,6 +26,10 @@ public:
 
   virtual void print_state() = 0;
 
+  inline CacheControllerStats get_stats() {
+    return stats;
+  }
+
 protected:
   CacheController(size_t core_no, Cache& cache, Bus& bus, SharedLine& shared_line);
 
@@ -26,4 +37,5 @@ protected:
   Cache& cache;
   Bus& bus;
   SharedLine& shared_line;
+  CacheControllerStats stats;
 };

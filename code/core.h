@@ -23,9 +23,11 @@ private:
 };
 
 struct CoreStats {
+  size_t exec_cycles{0};
   size_t compute_cycles{0};
-  size_t mem_insns{0};
-  size_t idle_cycles{0};  
+  size_t load_insns{0};
+  size_t store_insns{0};
+  size_t idle_cycles{0};
 };
 
 class Core {

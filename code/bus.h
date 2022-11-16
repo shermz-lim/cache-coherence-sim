@@ -25,6 +25,11 @@ private:
   std::string_view type_to_string();
 };
 
+struct BusStats {
+  size_t num_inv_upds{0};
+  size_t blks_traffic{0};
+};
+
 class Bus {
 public:
   inline bool has_request() {
@@ -39,9 +44,11 @@ public:
     return curr_transc.has_value();
   }
 
-  inline void curr_transc_complete() {
-    curr_transc = std::nullopt;
+  inline BusStats get_stats() {
+    return stats;
   }
+
+  void curr_transc_complete();
 
   BusTransaction next_transc();
 
@@ -50,4 +57,5 @@ public:
 private:
   std::list<BusTransaction> requests;
   std::optional<BusTransaction> curr_transc;
+  BusStats stats;
 };

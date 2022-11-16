@@ -70,6 +70,6 @@ int main(int argc, char* argv[]) {
     cache_controllers.push_back(std::move(c));
   }
 
-  Simulator s{cores, caches, bus, shared_line, cache_controllers};
+  Simulator s{block_size, cores, caches, bus, cache_controllers};
   s.simulate();
 }

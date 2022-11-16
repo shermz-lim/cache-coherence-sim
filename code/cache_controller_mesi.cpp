@@ -12,8 +12,13 @@ CacheControllerMesi::~CacheControllerMesi() = default;
 
 bool CacheControllerMesi::handle_core_op(CoreOp op) {
   assert(op.label != CoreOpLabel::OTHER);
-
   CacheBlock block_no = cache.get_block_no(op.value);
+
+  stats.tot_access++;
+  if (!cache.has_block(block_no)) {
+    stats.misses++;
+  }
+  
   bool read = op.label == CoreOpLabel::LOAD;
   BusTransactionType transc_t = read ? BusTransactionType::BUS_RD : BusTransactionType::BUS_RDX;
   switch (get_state(block_no)) {
@@ -27,10 +32,12 @@ bool CacheControllerMesi::handle_core_op(CoreOp op) {
         update_state(block_no, State::MODIFIED);
         cache.write_block(block_no);
       }
+      stats.priv_access++;
       return true;
     case State::SHARED:
       if (read) {
         cache.read_block(block_no);
+        stats.shared_access++;
         return true;
       } else {
         bus.add_request(BusTransaction{BusTransactionType::BUS_RDX, block_no, op});
@@ -42,6 +49,7 @@ bool CacheControllerMesi::handle_core_op(CoreOp op) {
       } else {
         cache.write_block(block_no);
       }
+      stats.priv_access++;
       return true;
   }
 }
@@ -54,9 +62,15 @@ void CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
     State new_state = shared_line.assert_line(block_no) ? State::SHARED : State::EXCLUSIVE;
     update_state(block_no, new_state);
     cache.read_block(block_no);
+    if (new_state == State::SHARED) {
+      stats.shared_access++;
+    } else {
+      stats.priv_access++;
+    }
   } else if (transc.t == BusTransactionType::BUS_RDX) {
     update_state(block_no, State::MODIFIED);
     cache.write_block(block_no);
+    stats.priv_access++;
   } else {
     assert(false);
   }

@@ -25,6 +25,7 @@ void Simulator::simulate() {
     events.erase(events.begin());
 
     // start of logging
+#ifdef DEBUG
     std::cout << "========= Event Processing =========\n"
               << "time: " << time
               << ", " << std::visit(event_string, event)
@@ -34,6 +35,7 @@ void Simulator::simulate() {
     for (auto& cache : caches) cache.print_state();
     for (auto& controller : cache_controllers) controller->print_state();
     std::cout << std::endl;
+#endif
     // end of logging
 
     // event processing

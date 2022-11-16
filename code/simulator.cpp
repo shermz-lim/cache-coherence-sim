@@ -201,6 +201,4 @@ void Simulator::output_stats() {
             << "\nPrivate Accesses: " << o_priv_access
             << "\nShared Accesses: " << o_shared_access
             << std::endl;
-  
-  std::cout << std::endl;
 }

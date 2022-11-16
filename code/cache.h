@@ -16,10 +16,10 @@ public:
   }
 
   bool has_block(CacheBlock block_no);
-  // attempt to read block and returns whether there's a cache hit
-  bool read_block(CacheBlock block_no);
-  // attempt to write block and returns whether there's a cache hit
-  bool write_block(CacheBlock block_no);
+  // read block, assuming it's there
+  void read_block(CacheBlock block_no);
+  // write block, assuming it's there
+  void write_block(CacheBlock block_no);
   // insert block, and assumes there's space
   void insert_block(CacheBlock block_no);
   // remove block, and returns whether it's dirty
@@ -45,7 +45,7 @@ private:
     return cache_sets.at(get_set_index(block_no));
   }
 
-  bool access_block(CacheBlock block_no, bool modify);
+  void access_block(CacheBlock block_no, bool modify);
 
   size_t core_no;
   size_t assoc;

@@ -15,11 +15,11 @@ bool Cache::has_block(CacheBlock block_no) {
   return get_cache_set(block_no).blocks.count(block_no);
 }
 
-bool Cache::read_block(CacheBlock block_no) {
+void Cache::read_block(CacheBlock block_no) {
   return access_block(block_no, false);
 }
 
-bool Cache::write_block(CacheBlock block_no) {
+void Cache::write_block(CacheBlock block_no) {
   return access_block(block_no, true);
 }
 
@@ -67,16 +67,12 @@ void Cache::print_state() {
   }
 }
 
-bool Cache::access_block(CacheBlock block_no, bool modify) {
+void Cache::access_block(CacheBlock block_no, bool modify) {
+  assert(has_block(block_no));
   CacheSet& cache_set = get_cache_set(block_no);
-  if (cache_set.blocks.count(block_no)) {
-    cache_set.blocks_access_order.remove(block_no);
-    cache_set.blocks_access_order.push_front(block_no);
-    if (modify) {
-      cache_set.blocks.at(block_no) = true;
-    }
-    return true;
-  } else {
-    return false;
+  cache_set.blocks_access_order.remove(block_no);
+  cache_set.blocks_access_order.push_front(block_no);
+  if (modify) {
+    cache_set.blocks.at(block_no) = true;
   }
 }

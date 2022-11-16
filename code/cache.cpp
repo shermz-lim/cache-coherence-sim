@@ -55,6 +55,19 @@ std::optional<std::pair<CacheBlock, bool>> Cache::maybe_evict_block(CacheBlock b
   }
 }
 
+void Cache::clear_dirty_bit(CacheBlock block_no) {
+  assert(has_block(block_no));
+  CacheSet& cache_set = get_cache_set(block_no);
+  assert(cache_set.blocks.at(block_no));
+  cache_set.blocks.at(block_no) = false;
+}
+
+bool Cache::is_dirty(CacheBlock block_no) {
+  assert(has_block(block_no));
+  CacheSet& cache_set = get_cache_set(block_no);
+  return cache_set.blocks.at(block_no);
+}
+
 void Cache::print_state() {
   std::cout << "------- Cache " << core_no << " state -------\n";
   for (size_t i = 0; i < cache_sets.size(); i++) {

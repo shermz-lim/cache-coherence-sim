@@ -103,6 +103,7 @@ bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
     case State::MODIFIED:
       if (t == BusTransactionType::BUS_RD) {
         update_state(block_no, State::SHARED);
+        cache.clear_dirty_bit(block_no);
         return true;
       } else if (t == BusTransactionType::BUS_RDX) {
         update_state(block_no, State::INVALID);
@@ -114,7 +115,7 @@ bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
 }
 
 void CacheControllerMesi::evict_block(CacheBlock block_no) {
-  blocks_state.at(block_no) = State::INVALID;
+  blocks_state.erase(block_no);
 }
 
 void CacheControllerMesi::print_state() {
@@ -150,7 +151,11 @@ void CacheControllerMesi::update_state(CacheBlock block_no, State state) {
   State old_state = get_state(block_no);
   assert(old_state != state);
   // update block's state
-  blocks_state[block_no] = state;
+  if (state == State::INVALID) {
+    blocks_state.erase(block_no);
+  } else {
+    blocks_state[block_no] = state;
+  }
   // update cache
   if (old_state == State::INVALID) { // Invalid -> Shared/Exclusive/Modified
     cache.insert_block(block_no);

@@ -62,9 +62,13 @@ void Simulator::EventHandler::operator()(BusRequest& req) {
   size_t resp_cycles = 0;
 
   if (transc.t == BusTransactionType::BUS_WB) {
-    resp_cycles += MEM_ACCESS_TIME;
+    auto& cache = sim.caches.at(transc.op_trigger.core_no);
+    // actually do write back if block is still present + is dirty
+    if (cache.has_block(transc.block) && cache.is_dirty(transc.block)) {
+      resp_cycles += MEM_ACCESS_TIME;
+    }
 
-  } else { // a read
+  } else if (transc.t == BusTransactionType::BUS_RD || transc.t == BusTransactionType::BUS_RDX) { // a read
     bool flush = false;
     for (size_t core_no = 0; core_no < sim.cores.size(); core_no++) {
       if (transc.op_trigger.core_no == core_no) continue;
@@ -76,6 +80,8 @@ void Simulator::EventHandler::operator()(BusRequest& req) {
 
     // time to flush or not + time to read
     resp_cycles += ((flush ? MEM_ACCESS_TIME : 0) + MEM_ACCESS_TIME);
+  } else {
+    assert(false);
   }
 
   sim.add_event(sim.curr_clock + resp_cycles, BusResponse{transc});
@@ -87,12 +93,16 @@ void Simulator::EventHandler::operator()(BusResponse& resp) {
   if (transc.t == BusTransactionType::BUS_WB) { // eviction successful
     // restart operation
     sim.add_event(sim.curr_clock, CoreOpStart{transc.op_trigger});
-  } else { // bus read complete
+  
+  } else if (transc.t == BusTransactionType::BUS_RD || transc.t == BusTransactionType::BUS_RDX) { // a read
     sim.cache_controllers.at(transc.op_trigger.core_no)->handle_bus_resp(
       transc
     );
     // 1 cycle for cache hit
     sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{transc.op_trigger});
+
+  } else {
+    assert(false);
   }
 }
 

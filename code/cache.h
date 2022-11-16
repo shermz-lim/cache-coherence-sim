@@ -27,6 +27,10 @@ public:
   // maybe evict a block if there's no space to insert CacheBlock with block_no
   // returns evicted cache block if any, and whether it's dirty
   std::optional<std::pair<CacheBlock, bool>> maybe_evict_block(CacheBlock block_no);
+  // void clear dirty bit of block, assumes it's there
+  void clear_dirty_bit(CacheBlock block_no);
+  // returns whether block is dirty, assumes it's there
+  bool is_dirty(CacheBlock block_no);
   void print_state();
 
 private:

@@ -20,20 +20,21 @@ std::string_view BusTransaction::type_to_string() {
       return "BUS_RDX";
     case BusTransactionType::BUS_WB:
       return "BUS_WB";
+    case BusTransactionType::BUS_UPD:
+      return "BUS_UPD";
   }
 }
 
 void Bus::curr_transc_complete() {
   switch (curr_transc.value().t) {
     case BusTransactionType::BUS_RD:
+    case BusTransactionType::BUS_WB:
       stats.blks_traffic++;
       break;
     case BusTransactionType::BUS_RDX:
+    case BusTransactionType::BUS_UPD:
       stats.blks_traffic++;
       stats.num_inv_upds++;
-      break;
-    case BusTransactionType::BUS_WB:
-      stats.blks_traffic++;
       break;
   }
   curr_transc = std::nullopt;

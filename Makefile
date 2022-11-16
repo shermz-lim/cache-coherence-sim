@@ -1,10 +1,13 @@
 
-CPPFLAGS = -std=c++20 -O2 -Wall
+CPPFLAGS = -std=c++20 -Wall
 TARGET = coherence
 SRC_FILES := $(wildcard *.cpp)
 
 all:
-	g++ $(CPPFLAGS) -o $(TARGET) $(SRC_FILES)
+	g++ $(CPPFLAGS) -O2 -o $(TARGET) $(SRC_FILES)
+
+debug:
+	g++ $(CPPFLAGS) -g -DDEBUG -o $(TARGET)-g $(SRC_FILES)
 
 clean:
 	rm $(TARGET)

@@ -63,7 +63,7 @@ bool CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
   State state = get_state(block_no);
   assert(transc.op_trigger.core_no == core_no);
   if (state == State::INVALID && transc.t == BusTransactionType::BUS_RD) {
-    State new_state = shared_line.assert_line(block_no) ? State::SHARED : State::EXCLUSIVE;
+    State new_state = shared_line.assert_line(block_no, core_no) ? State::SHARED : State::EXCLUSIVE;
     update_state(block_no, new_state);
     cache.read_block(block_no);
     if (new_state == State::SHARED) {
@@ -77,9 +77,9 @@ bool CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
     cache.write_block(block_no);
     stats.priv_access++;
     return true;
-  } else {
-    assert(false);
   }
+  assert(false);
+  return false;
 }
 
 bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {

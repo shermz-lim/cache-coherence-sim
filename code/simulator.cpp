@@ -4,10 +4,10 @@
 #include "simulator.h"
 
 Simulator::Simulator(size_t block_size, std::vector<Core>& cores,
-           std::vector<Cache>& caches, Bus& bus,
+           std::vector<Cache>& caches, Bus& bus, SharedLine& shared_line,
            std::vector<std::unique_ptr<CacheController>>& cache_controllers)
 : block_size(block_size), cores(cores), caches(caches), bus(bus),
-  cache_controllers(cache_controllers)
+  shared_line(shared_line), cache_controllers(cache_controllers)
 {}
 
 void Simulator::simulate() {
@@ -88,6 +88,14 @@ void Simulator::EventHandler::operator()(BusRequest& req) {
 
     // time to flush or not + time to read
     resp_cycles += ((flush ? MEM_ACCESS_TIME : 0) + MEM_ACCESS_TIME);
+
+  } else if (transc.t == BusTransactionType::BUS_UPD) {
+    CacheBlock upd_blk = transc.block;
+    if (sim.shared_line.assert_line(upd_blk, transc.op_trigger.core_no)) {
+      // requires transfer
+      resp_cycles += sim.ctoc_transfer_time();
+    }
+
   } else {
     assert(false);
   }
@@ -106,10 +114,20 @@ void Simulator::EventHandler::operator()(BusResponse& resp) {
     bool done = sim.cache_controllers.at(transc.op_trigger.core_no)->handle_bus_resp(
       transc
     );
-    // 1 cycle for cache hit
+    // cache hit and complete op
     if (done) {
       sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{transc.op_trigger});
     }
+
+  } else if (transc.t == BusTransactionType::BUS_UPD) { // update has been transferred
+    size_t src_core = transc.op_trigger.core_no;
+    for (size_t core_no = 0; core_no < sim.cores.size(); core_no++) {
+      if (src_core == core_no) continue;
+      sim.cache_controllers.at(core_no)->handle_bus_transc(transc);
+    }
+    sim.cache_controllers.at(src_core)->handle_bus_resp(transc);
+    // cache hit and complete op
+    sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{transc.op_trigger});
 
   } else {
     assert(false);
@@ -148,7 +166,7 @@ void Simulator::EventHandler::operator()(CoreOpStart& op_s) {
 
   bool done = controller.handle_core_op(op);
   if (done) {
-    // 1 cycle for cache hit
+    // cache hit and complete op
     sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{op});
   }
 }

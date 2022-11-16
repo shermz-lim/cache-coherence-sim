@@ -6,6 +6,8 @@
 
 const size_t CACHE_HIT_TIME = 1;
 const size_t MEM_ACCESS_TIME = 100;
+const size_t CTOC_TIME_PERWORD = 2;
+const size_t WORD_SIZE = 4;
 
 struct BusRequest {
   BusTransaction transc;
@@ -37,7 +39,7 @@ using EventQueue = std::set<std::pair<size_t, Event>>;
 class Simulator {
 public:
   Simulator(size_t block_size, std::vector<Core>& cores,
-            std::vector<Cache>& caches, Bus& bus,
+            std::vector<Cache>& caches, Bus& bus, SharedLine& shared_line,
             std::vector<std::unique_ptr<CacheController>>& cache_controllers);
 
   void simulate();
@@ -67,6 +69,10 @@ private:
     events.insert(std::make_pair(time, e));
   }
 
+  inline size_t ctoc_transfer_time() {
+    return CTOC_TIME_PERWORD * (block_size / WORD_SIZE);
+  }
+
   void output_stats();
 
   size_t curr_clock{0};
@@ -75,5 +81,6 @@ private:
   std::vector<Core>& cores;
   std::vector<Cache>& caches;
   Bus& bus;
+  SharedLine& shared_line;
   std::vector<std::unique_ptr<CacheController>>& cache_controllers;
 };

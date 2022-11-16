@@ -66,11 +66,89 @@ bool CacheControllerDragon::handle_core_op(CoreOp op) {
 }
 
 bool CacheControllerDragon::handle_bus_resp(BusTransaction transc) {
+  CacheBlock block_no = transc.block;
+  State state = get_state(block_no);
+  assert(transc.op_trigger.core_no == core_no);
+  if (state == State::INVALID && transc.t == BusTransactionType::BUS_RD) {
+    bool shared = shared_line.assert_line(block_no, core_no);
+    if (transc.op_trigger.label == CoreOpLabel::LOAD) {
+      // read miss
+      update_state(block_no, shared ? State::SHARED_CLEAN : State::EXCLUSIVE);
+      cache.read_block(block_no);
+      if (shared) {
+        stats.shared_access++;
+      } else {
+        stats.priv_access++;
+      }
+      return true;
+    } else if (transc.op_trigger.label == CoreOpLabel::STORE) {
+      // write miss
+      if (shared) {
+        update_state(block_no, State::SHARED_CLEAN);
+        cache.read_block(block_no);
+        bus.add_request(
+          BusTransaction{BusTransactionType::BUS_UPD, block_no, transc.op_trigger}
+        );
+        return false;
+      } else {
+        update_state(block_no, State::MODIFIED);
+        cache.write_block(block_no);
+        stats.priv_access++;
+        return true;
+      }
+    }
 
+  } else if (
+    (state == State::SHARED_CLEAN || state == State::SHARED_MODIFIED)
+    && transc.t == BusTransactionType::BUS_UPD
+  ) {
+    bool shared = shared_line.assert_line(block_no, core_no);
+    update_state(block_no, shared ? State::SHARED_MODIFIED : State::MODIFIED);
+    cache.write_block(block_no);
+    if (shared) {
+      stats.shared_access++;
+    } else {
+      stats.priv_access++;
+    }
+    return true;
+
+  }
+  assert(false);
+  return false;
 }
 
 bool CacheControllerDragon::handle_bus_transc(BusTransaction transc) {
-
+  CacheBlock block_no = transc.block;
+  BusTransactionType t = transc.t;
+  assert(transc.op_trigger.core_no != core_no);
+  switch (get_state(block_no)) {
+    case State::INVALID:
+      return false;
+    case State::EXCLUSIVE:
+      if (t == BusTransactionType::BUS_RD) {
+        update_state(block_no, State::SHARED_CLEAN);
+        return false;
+      }
+    case State::SHARED_CLEAN:
+      if (t == BusTransactionType::BUS_RD || t == BusTransactionType::BUS_UPD) {
+        return false;
+      }
+    case State::SHARED_MODIFIED:
+      if (t == BusTransactionType::BUS_RD) {
+        return true;
+      } else if (t == BusTransactionType::BUS_UPD) {
+        update_state(block_no, State::SHARED_CLEAN);
+        cache.clear_dirty_bit(block_no);
+        return false;
+      }
+    case State::MODIFIED:
+      if (t == BusTransactionType::BUS_RD) {
+        update_state(block_no, State::SHARED_MODIFIED);
+        return true;
+      }
+  }
+  assert(false);
+  return false;
 }
 
 void CacheControllerDragon::evict_block(CacheBlock block_no) {

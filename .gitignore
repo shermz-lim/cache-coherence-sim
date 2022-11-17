@@ -4,3 +4,4 @@ coherence-g
 *.dSYM
 .vscode
 obj
+out

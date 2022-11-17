@@ -6,23 +6,26 @@ DEBUGFLAGS = -g -DDEBUG
 
 TARGET = coherence
 SRC_FILES := $(wildcard code/*.cpp)
-OBJ_FILES := $(patsubst code/%.cpp, out/%.o, $(SRC_FILES))
-DOBJ_FILES := $(patsubst code/%.cpp, out/%-g.o, $(SRC_FILES))
+OBJ_FILES := $(patsubst code/%.cpp, obj/%.o, $(SRC_FILES))
+DOBJ_FILES := $(patsubst code/%.cpp, obj/%-g.o, $(SRC_FILES))
 
-all: $(OBJ_FILES)
+all: obj $(OBJ_FILES)
 	$(CXX) $(CXXFLAGS) $(OFLAGS) -o $(TARGET) $(OBJ_FILES)
 
-out/%.o: code/%.cpp
+obj/%.o: code/%.cpp
 	$(CXX) $(CXXFLAGS) $(OFLAGS) -c -o $@ $<
 
-debug: $(DOBJ_FILES)
+debug: obj $(DOBJ_FILES)
 	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) -o $(TARGET)-g $(DOBJ_FILES)
 
-out/%-g.o: code/%.cpp
+obj/%-g.o: code/%.cpp
 	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) -c -o $@ $<
 
+obj:
+	mkdir -p obj
+
 clean:
-	rm out/*
+	rm obj/*
 	rm $(TARGET)
 	rm $(TARGET)-g
 

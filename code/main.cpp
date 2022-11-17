@@ -89,6 +89,15 @@ int main(int argc, char* argv[]) {
     cache_controllers.push_back(std::move(c));
   }
 
+  // print input
+  std::cout << "========= Input Stats ========="
+            << "\nProtocol: " << protocol
+            << "\nInput: " << input_file
+            << "\nCache Size (bytes): " << cache_size
+            << "\nAssociativity: " << assoc
+            << "\nBlock size (bytes): " << block_size
+            << std::endl;
+
   Simulator s{block_size, cores, caches, bus, shared_line, cache_controllers};
   s.simulate();
 }

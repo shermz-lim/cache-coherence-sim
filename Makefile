@@ -1,5 +1,5 @@
 
-CXX = g++
+CXX = clang++
 CXXFLAGS = -std=c++20 -Wall
 OFLAGS = -O2
 DEBUGFLAGS = -g -DDEBUG

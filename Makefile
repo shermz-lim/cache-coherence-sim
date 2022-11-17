@@ -22,9 +22,9 @@ out/%-g.o: code/%.cpp
 	$(CXX) $(CXXFLAGS) $(DEBUGFLAGS) -c -o $@ $<
 
 clean:
+	rm out/*
 	rm $(TARGET)
 	rm $(TARGET)-g
-	rm out/*
 
 seed:
 	unzip -o "data/*.zip" -d data

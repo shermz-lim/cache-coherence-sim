@@ -11,6 +11,13 @@ struct CacheControllerStats {
   size_t shared_access{0};
 };
 
+// the output from handling a bus transaction
+enum class BusTranscOutput {
+  NOTHING,
+  CACHE_TRANSFER,
+  FLUSH
+};
+
 class CacheController {
 public:
   virtual ~CacheController();
@@ -20,8 +27,8 @@ public:
   // handles response to previous transaction placed on bus in handle_core_op
   // returns whether op can be completed (do cache hit in 1 cycle)
   virtual bool handle_bus_resp(BusTransaction transc) = 0;
-  // handles snooped bus transaction from other cores. Returns whether flush to memory is required
-  virtual bool handle_bus_transc(BusTransaction transc) = 0;
+  // handles snooped bus transaction from other cores. Returns output action
+  virtual BusTranscOutput handle_bus_transc(BusTransaction transc) = 0;
   // evict block
   virtual void evict_block(CacheBlock block_no) = 0;
 

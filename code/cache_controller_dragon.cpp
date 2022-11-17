@@ -117,38 +117,38 @@ bool CacheControllerDragon::handle_bus_resp(BusTransaction transc) {
   return false;
 }
 
-bool CacheControllerDragon::handle_bus_transc(BusTransaction transc) {
+BusTranscOutput CacheControllerDragon::handle_bus_transc(BusTransaction transc) {
   CacheBlock block_no = transc.block;
   BusTransactionType t = transc.t;
   assert(transc.op_trigger.core_no != core_no);
   switch (get_state(block_no)) {
     case State::INVALID:
-      return false;
+      return BusTranscOutput::NOTHING;
     case State::EXCLUSIVE:
       if (t == BusTransactionType::BUS_RD) {
         update_state(block_no, State::SHARED_CLEAN);
-        return false;
+        return BusTranscOutput::NOTHING;
       }
     case State::SHARED_CLEAN:
       if (t == BusTransactionType::BUS_RD || t == BusTransactionType::BUS_UPD) {
-        return false;
+        return BusTranscOutput::NOTHING;
       }
     case State::SHARED_MODIFIED:
       if (t == BusTransactionType::BUS_RD) {
-        return true;
+        return BusTranscOutput::FLUSH;
       } else if (t == BusTransactionType::BUS_UPD) {
         update_state(block_no, State::SHARED_CLEAN);
         cache.clear_dirty_bit(block_no);
-        return false;
+        return BusTranscOutput::NOTHING;
       }
     case State::MODIFIED:
       if (t == BusTransactionType::BUS_RD) {
         update_state(block_no, State::SHARED_MODIFIED);
-        return true;
+        return BusTranscOutput::FLUSH;
       }
   }
   assert(false);
-  return false;
+  return BusTranscOutput::NOTHING;
 }
 
 void CacheControllerDragon::evict_block(CacheBlock block_no) {

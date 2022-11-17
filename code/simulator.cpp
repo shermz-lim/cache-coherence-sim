@@ -77,17 +77,29 @@ void Simulator::EventHandler::operator()(BusRequest& req) {
     }
 
   } else if (transc.t == BusTransactionType::BUS_RD || transc.t == BusTransactionType::BUS_RDX) { // a read
-    bool flush = false;
+    size_t num_flushes = 0;
+    size_t num_transfers = 0;
     for (size_t core_no = 0; core_no < sim.cores.size(); core_no++) {
       if (transc.op_trigger.core_no == core_no) continue;
-      bool flush_i = sim.cache_controllers.at(core_no)->handle_bus_transc(
+      auto output = sim.cache_controllers.at(core_no)->handle_bus_transc(
         transc
       );
-      flush = flush || flush_i;
+      if (output == BusTranscOutput::CACHE_TRANSFER) {
+        num_transfers++;
+      } else if (output == BusTranscOutput::FLUSH) {
+        num_flushes++;
+      }
     }
+    assert(!(num_flushes > 0 && num_transfers > 0));
+    assert(num_flushes <= 1);
 
-    // time to flush or not + time to read
-    resp_cycles += ((flush ? MEM_ACCESS_TIME : 0) + MEM_ACCESS_TIME);
+    if (num_flushes > 0) {
+      resp_cycles += (2 * MEM_ACCESS_TIME); // 1 to flush, 1 to read
+    } else if (num_transfers > 0) {
+      resp_cycles += sim.ctoc_transfer_time(); // time for cache-to-cache transfer
+    } else {
+      resp_cycles += MEM_ACCESS_TIME; // 1 to read from memory
+    }
 
   } else if (transc.t == BusTransactionType::BUS_UPD) {
     CacheBlock upd_blk = transc.block;
@@ -123,9 +135,11 @@ void Simulator::EventHandler::operator()(BusResponse& resp) {
     size_t src_core = transc.op_trigger.core_no;
     for (size_t core_no = 0; core_no < sim.cores.size(); core_no++) {
       if (src_core == core_no) continue;
-      sim.cache_controllers.at(core_no)->handle_bus_transc(transc);
+      auto output = sim.cache_controllers.at(core_no)->handle_bus_transc(transc);
+      assert(output == BusTranscOutput::NOTHING);
     }
-    sim.cache_controllers.at(src_core)->handle_bus_resp(transc);
+    bool done = sim.cache_controllers.at(src_core)->handle_bus_resp(transc);
+    assert(done);
     // cache hit and complete op
     sim.add_event(sim.curr_clock + CACHE_HIT_TIME, CoreOpEnd{transc.op_trigger});
 

@@ -82,42 +82,42 @@ bool CacheControllerMesi::handle_bus_resp(BusTransaction transc) {
   return false;
 }
 
-bool CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
+BusTranscOutput CacheControllerMesi::handle_bus_transc(BusTransaction transc) {
   CacheBlock block_no = transc.block;
   BusTransactionType t = transc.t;
   assert(transc.op_trigger.core_no != core_no);
   switch (get_state(block_no)) {
     case State::INVALID:
-      return false;
+      return BusTranscOutput::NOTHING;
     case State::EXCLUSIVE:
       // no cache-to-cache sharing
       if (t == BusTransactionType::BUS_RD) {
         update_state(block_no, State::SHARED);
-        return false;
+        return BusTranscOutput::NOTHING;
       } else if (t == BusTransactionType::BUS_RDX) {
         update_state(block_no, State::INVALID);
-        return false;
+        return BusTranscOutput::NOTHING;
       }
     case State::SHARED:
       // no cache-to-cache sharing
       if (t == BusTransactionType::BUS_RD) {
-        return false;
+        return BusTranscOutput::NOTHING;
       } else if (t == BusTransactionType::BUS_RDX) {
         update_state(block_no, State::INVALID);
-        return false;
+        return BusTranscOutput::NOTHING;
       }
     case State::MODIFIED:
       if (t == BusTransactionType::BUS_RD) {
         update_state(block_no, State::SHARED);
         cache.clear_dirty_bit(block_no);
-        return true;
+        return BusTranscOutput::FLUSH;
       } else if (t == BusTransactionType::BUS_RDX) {
         update_state(block_no, State::INVALID);
-        return true;
+        return BusTranscOutput::FLUSH;
       }
   }
   assert(false);
-  return false;
+  return BusTranscOutput::NOTHING;
 }
 
 void CacheControllerMesi::evict_block(CacheBlock block_no) {

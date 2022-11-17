@@ -12,7 +12,7 @@ public:
 
   bool handle_core_op(CoreOp op) override;
   bool handle_bus_resp(BusTransaction transc) override;
-  bool handle_bus_transc(BusTransaction transc) override;
+  BusTranscOutput handle_bus_transc(BusTransaction transc) override;
   void evict_block(CacheBlock block_no) override;
 
   void print_state() override;

@@ -17,7 +17,7 @@ public:
 
   void print_state() override;
 
-private:
+protected:
   enum class State {
     INVALID,
     EXCLUSIVE,
@@ -25,10 +25,11 @@ private:
     MODIFIED
   };
 
-  static std::string_view state_to_string(State s);
-
   State get_state(CacheBlock block_no);
   void update_state(CacheBlock block_no, State state);
 
+private:
+  static std::string_view state_to_string(State s);
   std::unordered_map<CacheBlock, State> blocks_state{};
+
 };

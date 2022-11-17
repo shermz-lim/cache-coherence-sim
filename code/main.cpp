@@ -6,6 +6,7 @@
 
 #include "simulator.h"
 #include "cache_controller_mesi.h"
+#include "cache_controller_imesi.h"
 #include "cache_controller_dragon.h"
 
 const size_t DEF_CACHE_SIZE = 4096;
@@ -15,6 +16,7 @@ const std::string DATA_DIR{"data"};
 const size_t NUM_CORES = 4;
 
 const std::string MESI_PROTOCOL_NAME{"MESI"};
+const std::string IMESI_PROTOCOL_NAME{"IMESI"};
 const std::string DRAGON_PROTOCOL_NAME{"Dragon"};
 
 std::vector<std::pair<int, size_t>> parse_core_input(
@@ -71,6 +73,10 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<CacheController> c{};
     if (protocol == MESI_PROTOCOL_NAME) {
       c = std::make_unique<CacheControllerMesi>(
+        core_no, caches.at(core_no), bus, shared_line
+      );
+    } else if (protocol == IMESI_PROTOCOL_NAME) {
+      c = std::make_unique<CacheControllerIMesi>(
         core_no, caches.at(core_no), bus, shared_line
       );
     } else if (protocol == DRAGON_PROTOCOL_NAME) {

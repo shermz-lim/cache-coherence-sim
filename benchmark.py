@@ -29,16 +29,19 @@ def run_experiment(protocol, inp, cs, a, blk_sz):
       stdout=out_file
     )
 
-# run_experiment("MESI", "blackscholes", DEF_CACHE_SIZE, DEF_ASSOC, DEF_BLOCK_SIZE)
-for cs in cache_sizes:
-  for protocol in protocols:
-    for inp in inputs:
-      run_experiment(protocol, inp, cs, DEF_ASSOC, DEF_BLOCK_SIZE)
-for a in assocs:
-  for protocol in protocols:
-    for inp in inputs:
-      run_experiment(protocol, inp, DEF_CACHE_SIZE, a, DEF_BLOCK_SIZE)
-for blk_sz in block_sizes:
-  for protocol in protocols:
-    for inp in inputs:
-      run_experiment(protocol, inp, DEF_CACHE_SIZE, DEF_ASSOC, blk_sz)
+def main():
+  for cs in cache_sizes:
+    for protocol in protocols:
+      for inp in inputs:
+        run_experiment(protocol, inp, cs, DEF_ASSOC, DEF_BLOCK_SIZE)
+  for a in assocs:
+    for protocol in protocols:
+      for inp in inputs:
+        run_experiment(protocol, inp, DEF_CACHE_SIZE, a, DEF_BLOCK_SIZE)
+  for blk_sz in block_sizes:
+    for protocol in protocols:
+      for inp in inputs:
+        run_experiment(protocol, inp, DEF_CACHE_SIZE, DEF_ASSOC, blk_sz)
+
+if __name__ == "__main__":
+  main()

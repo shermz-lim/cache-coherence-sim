@@ -3,6 +3,8 @@ Plot results of experiments
 '''
 
 import csv
+import pandas as pd
+import matplotlib.pyplot as plt
 from benchmark import *
 
 def get_value(line):
@@ -33,10 +35,14 @@ def parse():
   for a in assocs:
     for protocol in protocols:
       for inp in inputs:
+        if a == DEF_ASSOC:
+          continue
         experiments.append((protocol, inp, DEF_CACHE_SIZE, a, DEF_BLOCK_SIZE))
   for blk_sz in block_sizes:
     for protocol in protocols:
       for inp in inputs:
+        if blk_sz == DEF_BLOCK_SIZE:
+          continue
         experiments.append((protocol, inp, DEF_CACHE_SIZE, DEF_ASSOC, blk_sz))
   rows = [['protocol', 'benchmark', 'cache_size', 'associativity', 'block_size',
           'miss_rate_0', 'miss_rate_1', 'miss_rate_2', 'miss_rate_3',

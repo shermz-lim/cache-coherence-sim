@@ -56,8 +56,5 @@ def parse():
     writer = csv.writer(f)
     writer.writerows(rows)
 
-def main():
-  pass
-
 if __name__ == "__main__":
   parse()

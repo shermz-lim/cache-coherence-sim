@@ -25,9 +25,7 @@ obj:
 	mkdir -p obj
 
 clean:
-	rm obj/*
-	rm $(TARGET)
-	rm $(TARGET)-g
+	rm -f obj/* $(TARGET) $(TARGET)-g
 
 seed:
 	unzip -o "data/*.zip" -d data

@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include "cache_controller_imesi.h"
 
 CacheControllerIMesi::CacheControllerIMesi(size_t core_no, Cache& cache, Bus& bus,
